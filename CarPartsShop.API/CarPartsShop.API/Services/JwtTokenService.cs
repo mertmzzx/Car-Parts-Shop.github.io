@@ -29,7 +29,6 @@ namespace CarPartsShop.API.Services
                 new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName ?? ""),
                 new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName ?? ""),
 
-                // optional but nice to have:
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 

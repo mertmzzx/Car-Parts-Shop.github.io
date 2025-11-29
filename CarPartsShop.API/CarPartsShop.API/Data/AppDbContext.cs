@@ -5,14 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarPartsShop.API.Data
 {
-    // AppUser/AppRole are your custom Identity types (int keys)
     public class AppDbContext : IdentityDbContext<AppUser, AppRole, string>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Part> Parts => Set<Part>();
-        public DbSet<Customer> Customers => Set<Customer>();   // keep if you have a separate Customer profile
+        public DbSet<Customer> Customers => Set<Customer>();   
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<OrderStatusHistory> OrderStatusHistory => Set<OrderStatusHistory>();

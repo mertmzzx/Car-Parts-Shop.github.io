@@ -7,7 +7,6 @@
         public string Sku { get; set; } = default!;
         public string? Description { get; set; }
 
-        // ✅ NEW
         public string? ImageUrl { get; set; }
 
         public decimal Price { get; set; }

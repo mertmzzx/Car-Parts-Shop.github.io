@@ -17,7 +17,7 @@ namespace CarPartsShop.API.Data
             var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // -------- Roles & Admin --------
+            // Roles
             foreach (var role in new[] { Roles.Customer, Roles.SalesAssistant, Roles.Administrator })
                 if (!await roleMgr.RoleExistsAsync(role))
                     await roleMgr.CreateAsync(new AppRole { Name = role });
@@ -47,7 +47,7 @@ namespace CarPartsShop.API.Data
                 }
             }
 
-            // -------- App data --------
+            // Data Seed
             await db.Database.MigrateAsync();
 
             if (!await db.Categories.AnyAsync())
@@ -77,7 +77,7 @@ namespace CarPartsShop.API.Data
                         Price = 45.99m,
                         QuantityInStock = 82,
                         CategoryId = await Cat("Brakes"),
-                        ImageUrl = null // will be overwritten below
+                        ImageUrl = null 
                     },
                     new Part
                     {
@@ -154,18 +154,16 @@ namespace CarPartsShop.API.Data
                 await db.SaveChangesAsync();
             }
 
-            // ---------- Ensure extra parts so Related Products has content ----------
+            // extra parts
             {
-                // helper: existing categories by name
                 var catMap = await db.Categories.ToDictionaryAsync(c => c.Name, c => c.Id);
 
-                // helper: placeholder image
+                // placeholder image
                 string PH2(string text) => $"https://placehold.co/400x300?text={WebUtility.UrlEncode(text)}";
 
-                // Add more SKUs across categories (no duplicates; we check by SKU)
                 var moreParts = new[]
                 {
-                       // Brakes
+                    // Brakes
                     new { Name = "Front Brake Pad Set Premium", Sku = "BRK-101", Desc = "Low-dust ceramic pads for quiet, confident stops.", Price = 54.99m, Qty = 60, Cat = "Brakes", Img = "Front Brake Pad Set" },
                     new { Name = "Rear Brake Pad Set",            Sku = "BRK-102", Desc = "OE-style semi-metallic pads.",                     Price = 39.99m, Qty = 85, Cat = "Brakes", Img = "Rear Brake Pads" },
                     new { Name = "Brake Caliper (Left Front)",    Sku = "BRK-201", Desc = "Remanufactured caliper with bracket.",             Price = 89.00m, Qty = 20, Cat = "Brakes", Img = "Brake Caliper LF" },
@@ -218,7 +216,7 @@ namespace CarPartsShop.API.Data
             }
 
 
-            // -------- Force inline SVG for ALL parts (no external DNS) --------
+            // Force inline SVG for ALL parts (no external DNS)
             static string SvgDataUri(string text)
             {
                 // Build a minimal SVG and URL-encode it for the data URI

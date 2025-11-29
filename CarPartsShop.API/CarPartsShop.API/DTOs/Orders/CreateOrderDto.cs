@@ -25,13 +25,11 @@ namespace CarPartsShop.API.DTOs.Orders
     {
         public List<CreateOrderItemDto> Items { get; set; } = new();
 
-        // tells backend where to take the shipping info from
         public bool UseSavedAddress { get; set; } = true;
 
         // required when UseSavedAddress == false
         public CreateOrderAddressOverrideDto? ShippingAddressOverride { get; set; }
 
-        // simple selection for now
         public string ShippingMethod { get; set; } = "Standard";
 
         public string PaymentMethod { get; set; } = "Cash";

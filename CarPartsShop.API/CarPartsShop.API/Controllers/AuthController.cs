@@ -35,7 +35,7 @@ namespace CarPartsShop.API.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-            // Confirm password check (add ConfirmPassword to your DTO)
+            // password check 
             if (!string.IsNullOrWhiteSpace(dto.ConfirmPassword) &&
                 !string.Equals(dto.Password, dto.ConfirmPassword))
             {
@@ -49,7 +49,6 @@ namespace CarPartsShop.API.Controllers
 
             var user = new AppUser
             {
-                // Identity requires UserName; we set it to the Email so we don't expose a separate username in the UI
                 UserName = dto.Email,
                 Email = dto.Email,
                 FirstName = dto.FirstName,
@@ -60,22 +59,19 @@ namespace CarPartsShop.API.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            // Assign default Customer role
             await _userManager.AddToRoleAsync(user, Roles.Customer);
 
-            // 👇 Create the Customer row immediately after registering
             var customer = new Customer
             {
                 UserId = user.Id,
                 Email = user.Email!,
                 FirstName = user.FirstName ?? "",
                 LastName = user.LastName ?? ""
-                // Address fields remain null until the user fills them
             };
             _db.Customers.Add(customer);
             await _db.SaveChangesAsync();
 
-            // Issue token (you can ignore it on the frontend and redirect to /login)
+            // Issue token 
             var token = await _tokenService.CreateTokenAsync(user);
             var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? Roles.Customer;
 

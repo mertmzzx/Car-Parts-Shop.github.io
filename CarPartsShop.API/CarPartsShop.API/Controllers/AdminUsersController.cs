@@ -30,7 +30,7 @@ namespace CarPartsShop.API.Controllers
             _db = db;
         }
 
-        // -------------------- USERS --------------------
+        // Users
 
         [HttpGet("users")]
         public async Task<ActionResult<object>> GetUsers([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -127,27 +127,22 @@ namespace CarPartsShop.API.Controllers
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            // You can't delete yourself
+            // can't delete yourself
             var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (currentUserId == id) return Forbid();
 
-            // Load the Identity user
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            // Try to find a matching Customer row (if you mirror identity users there)
             var customer = await _db.Customers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.UserId == id);
 
-            // If customer has orders, either block delete or soft-delete instead
             if (customer != null)
             {
                 bool hasOrders = await _db.Orders.AnyAsync(o => o.CustomerId == customer.Id);
                 if (hasOrders)
                 {
-                    // Safer approach: do NOT hard delete a user who has orders
-                    // Return 409 Conflict so the UI can tell the admin why it failed
                     return Problem(
                         title: "User has orders",
                         detail: "This user has existing orders and cannot be deleted. Consider blocking the user instead.",
@@ -155,13 +150,11 @@ namespace CarPartsShop.API.Controllers
                 }
             }
 
-            // No orders — safe to remove Customer and then the Identity user
             using var tx = await _db.Database.BeginTransactionAsync();
             try
             {
                 if (customer != null)
                 {
-                    // if you store any other dependents (addresses, carts, etc.) delete them here first
                     _db.Customers.Remove(customer);
                     await _db.SaveChangesAsync();
                 }
@@ -186,23 +179,19 @@ namespace CarPartsShop.API.Controllers
         }
 
 
-        // -------------------- DASHBOARD STATS --------------------
+        // Dashboard Stats
 
         [HttpGet("stats")]
         public async Task<ActionResult<AdminStatsDto>> GetStats([FromQuery] int lowStockThreshold = 5)
         {
             try
             {
-                // Orders
                 var totalOrders = await _db.Orders.CountAsync();
 
-                // Users (Identity)
                 var totalUsers = await _userManager.Users.CountAsync();
 
-                // Revenue (sum of Order.Total; handles empty DB safely)
                 var totalRevenue = await _db.Orders.SumAsync(o => (decimal?)o.Total) ?? 0m;
 
-                // Low stock parts (<= threshold)
                 var lowStockCount = await _db.Parts.CountAsync(p => p.QuantityInStock <= lowStockThreshold);
 
                 return Ok(new AdminStatsDto
@@ -219,7 +208,7 @@ namespace CarPartsShop.API.Controllers
             }
         }
 
-        // -------------------- DASHBOARD LOGS --------------------
+        // Admin Logs
 
         [HttpGet("logs")]
         public async Task<ActionResult<IEnumerable<AdminLogDto>>> GetLogs([FromQuery] int take = 10)

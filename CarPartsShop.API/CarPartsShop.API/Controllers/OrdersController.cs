@@ -15,7 +15,7 @@ namespace CarPartsShop.API.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly AppDbContext _db;
-        private const decimal TAX_RATE = 0.20m; // adjust if you like
+        private const decimal TAX_RATE = 0.20m; 
 
         public OrdersController(AppDbContext db) => _db = db;
 
@@ -23,12 +23,11 @@ namespace CarPartsShop.API.Controllers
 
         private async Task<IActionResult> CancelOrderCore(Order order)
         {
-            // business rules
             if (order.Status == OrderStatus.Shipped || order.Status == OrderStatus.Delivered)
                 return BadRequest("This order has already been shipped/delivered and cannot be cancelled.");
 
             if (order.Status == OrderStatus.Cancelled)
-                return NoContent(); // idempotent
+                return NoContent();
 
             // Restock items
             var partIds = order.Items.Select(i => i.PartId).Distinct().ToList();
@@ -207,7 +206,6 @@ namespace CarPartsShop.API.Controllers
             var customer = await _db.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
             if (customer == null) return NotFound("Customer profile not found.");
 
-            // Validate parts & stock
             var partIds = dto.Items.Select(i => i.PartId).Distinct().ToList();
             var parts = await _db.Parts.Where(p => partIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
 
@@ -221,7 +219,6 @@ namespace CarPartsShop.API.Controllers
                     return BadRequest($"Not enough stock for PartId {item.PartId}. Requested {item.Quantity}, available {parts[item.PartId].QuantityInStock}.");
             }
 
-            // Totals + order items
             decimal subtotal = 0m;
             var orderItems = new List<OrderItem>();
             foreach (var item in dto.Items)
@@ -236,17 +233,16 @@ namespace CarPartsShop.API.Controllers
                     UnitPrice = part.Price
                 });
 
-                part.QuantityInStock -= item.Quantity; // decrement stock
+                part.QuantityInStock -= item.Quantity; 
             }
 
-            const decimal TAX_RATE = 0.20m;
             var tax = Math.Round(subtotal * TAX_RATE, 2, MidpointRounding.AwayFromZero);
             var total = subtotal + tax;
             var pm = (dto.PaymentMethod ?? "Cash").Trim();
             if (!string.Equals(pm, "Cash", StringComparison.OrdinalIgnoreCase))
                 return BadRequest("Unsupported payment method.");
 
-            // -------- NEW: shipping snapshot --------
+            // shipping snapshot
             string? shipFirst = null, shipLast = null, shipLine1 = null, shipLine2 = null,
                     shipCity = null, shipState = null, shipPostal = null, shipCountry = null, shipPhone = null;
 
@@ -277,14 +273,12 @@ namespace CarPartsShop.API.Controllers
                 if (a is null)
                     return BadRequest("Shipping address is required.");
 
-                // minimal required fields for a real shipment:
                 if (string.IsNullOrWhiteSpace(a.AddressLine1) ||
                     string.IsNullOrWhiteSpace(a.City) ||
                     string.IsNullOrWhiteSpace(a.PostalCode) ||
                     string.IsNullOrWhiteSpace(a.Country))
                     return BadRequest("AddressLine1, City, PostalCode and Country are required.");
 
-                // use provided names if present, else fall back to customer's
                 shipFirst = string.IsNullOrWhiteSpace(a.FirstName) ? customer.FirstName : a.FirstName;
                 shipLast = string.IsNullOrWhiteSpace(a.LastName) ? customer.LastName : a.LastName;
                 shipLine1 = a.AddressLine1;
@@ -295,7 +289,6 @@ namespace CarPartsShop.API.Controllers
                 shipCountry = a.Country;
                 shipPhone = string.IsNullOrWhiteSpace(a.Phone) ? customer.Phone : a.Phone;
             }
-            // ----------------------------------------
 
             var order = new Order
             {
@@ -311,7 +304,7 @@ namespace CarPartsShop.API.Controllers
                     new OrderStatusHistory { Status = OrderStatus.Pending, ChangedAt = DateTime.UtcNow }
                 },
 
-                // snapshot fields (must exist on Order model)
+                // snapshot fields 
                 ShipFirstName = shipFirst,
                 ShipLastName = shipLast,
                 ShipAddressLine1 = shipLine1,
@@ -340,7 +333,7 @@ namespace CarPartsShop.API.Controllers
                 throw;
             }
 
-            // Build response – use snapshot for display
+            // display snapshot
             string SnapshotToString()
             {
                 var segments = new[]
@@ -395,7 +388,6 @@ namespace CarPartsShop.API.Controllers
 
             if (order == null) return NotFound();
 
-            // Customers can cancel only their own orders
             if (User.IsInRole(Roles.Customer))
             {
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -416,7 +408,7 @@ namespace CarPartsShop.API.Controllers
         {
             IQueryable<Order> query = _db.Orders
                 .Include(o => o.Customer)
-                .Include(o => o.Items); // Always include Items
+                .Include(o => o.Items); 
 
             if (includeHistory)
                 query = query.Include(o => o.StatusHistory);
@@ -424,7 +416,6 @@ namespace CarPartsShop.API.Controllers
             var order = await query.FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return NotFound();
 
-            // 🔒 If caller is a Customer, they can only access their own order
             if (User.IsInRole(Roles.Customer))
             {
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -432,8 +423,6 @@ namespace CarPartsShop.API.Controllers
                     return Forbid(); // 403
             }
 
-            // …build and return OrderResponseDto exactly as you already do…
-            // (no changes needed below this line)
             var partIds = order.Items.Select(i => i.PartId).Distinct().ToList();
             var parts = await _db.Parts.Where(p => partIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
 
@@ -617,22 +606,17 @@ namespace CarPartsShop.API.Controllers
 
             if (order == null) return NotFound();
 
-            // Idempotent
             if (order.Status == newStatus) return NoContent();
 
-            // If we're setting to Cancelled, reuse the cancel logic (restock, history, etc.)
             if (newStatus == OrderStatus.Cancelled)
                 return await CancelOrderCore(order);
 
-            // Cannot change a cancelled order to any other status
             if (order.Status == OrderStatus.Cancelled)
                 return BadRequest("A cancelled order cannot change status.");
 
-            // Example business rule: you can't move backward from Delivered
             if (order.Status == OrderStatus.Delivered && newStatus != OrderStatus.Delivered)
                 return BadRequest("Delivered orders cannot change status.");
 
-            // Apply status + history
             order.Status = newStatus;
             order.StatusHistory.Add(new OrderStatusHistory
             {
