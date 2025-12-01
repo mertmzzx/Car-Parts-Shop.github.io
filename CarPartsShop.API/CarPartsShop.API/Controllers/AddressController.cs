@@ -34,7 +34,7 @@ namespace CarPartsShop.API.Controllers
         public async Task<ActionResult<AddressDto>> Get()
         {
             var customer = await GetCurrentCustomer();
-            if (customer == null) return NotFound(); // 204 instead of 404
+            if (customer == null) return NotFound(); 
 
             return Ok(new AddressDto
             {

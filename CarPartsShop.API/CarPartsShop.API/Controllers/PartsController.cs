@@ -19,7 +19,6 @@ namespace CarPartsShop.API.Controllers
             _db = db;
         }
 
-        // GET: /api/parts
         [HttpGet]
         public async Task<ActionResult<object>> GetParts(
             [FromQuery] string? q,
@@ -95,7 +94,6 @@ namespace CarPartsShop.API.Controllers
             });
         }
 
-        // GET: /api/parts/{id}
         [HttpGet("{id:int}")]
         public async Task<ActionResult<PartDto>> GetPartById(int id)
         {
@@ -146,8 +144,7 @@ namespace CarPartsShop.API.Controllers
 
             return CreatedAtAction(nameof(GetPartById), new { id = part.Id }, part);
         }
-
-        // PUT: /api/parts/{id}
+        
         [HttpPut("{id:int}")]
         [Authorize(Roles = $"{Roles.Administrator}, {Roles.SalesAssistant}")]
         public async Task<IActionResult> UpdatePart(int id, UpdatePartDto dto)
@@ -170,7 +167,6 @@ namespace CarPartsShop.API.Controllers
             return Ok(dto);
         }
 
-        // DELETE: /api/parts/{id}
         [HttpDelete("{id:int}")]
         [Authorize(Roles = Roles.Administrator)]
         public async Task<IActionResult> DeletePart(int id)

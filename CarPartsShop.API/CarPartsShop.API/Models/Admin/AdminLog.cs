@@ -1,5 +1,4 @@
-﻿// Models/AdminLog.cs
-namespace CarPartsShop.API.Models
+﻿namespace CarPartsShop.API.Models
 {
     public class AdminLog
     {

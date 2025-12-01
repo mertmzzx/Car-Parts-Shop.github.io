@@ -127,7 +127,6 @@ namespace CarPartsShop.API.Controllers
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            // can't delete yourself
             var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (currentUserId == id) return Forbid();
 

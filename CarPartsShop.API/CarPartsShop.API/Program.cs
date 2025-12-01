@@ -1,8 +1,8 @@
 using System.Text;
-using CarPartsShop.API.Auth;                 // Roles constants 
-using CarPartsShop.API.Data;                 // AppDbContext 
-using CarPartsShop.API.Models.Identity;      // AppUser/AppRole
-using CarPartsShop.API.Services;             // JwtTokenService 
+using CarPartsShop.API.Auth;                 
+using CarPartsShop.API.Data;                 
+using CarPartsShop.API.Models.Identity;      
+using CarPartsShop.API.Services;              
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,15 +10,12 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Identity 
 builder.Services
     .AddIdentityCore<AppUser>(opt =>
     {
-        // Dev-friendly rules; safe for local only
         opt.User.RequireUniqueEmail = true;
         opt.Password.RequiredLength = 8;
         opt.Password.RequireDigit = true;
@@ -30,7 +27,6 @@ builder.Services
     .AddEntityFrameworkStores<AppDbContext>()
     .AddSignInManager<SignInManager<AppUser>>();
 
-// JWT authentication
 var jwt = builder.Configuration.GetSection("Jwt");
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
 
@@ -50,7 +46,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Authorization policies for roles
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdmin", p => p.RequireRole(Roles.Administrator));
@@ -58,7 +53,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ManageCatalog", p => p.RequireRole(Roles.Administrator));
 });
 
-// CORS for frontends
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Dev", p => p
@@ -115,7 +110,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-// 6) Token service (used by AuthController)
 builder.Services.AddScoped<JwtTokenService>();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -137,7 +131,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "CarPartsShop API v1");
-    c.RoutePrefix = "swagger"; // makes it available at /swagger
+    c.RoutePrefix = "swagger"; // available at /swagger
 });
 
 
@@ -146,7 +140,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
-// Order matters: CORS must be before auth
+
 if (app.Environment.IsDevelopment())
 {
     app.UseCors("Dev");

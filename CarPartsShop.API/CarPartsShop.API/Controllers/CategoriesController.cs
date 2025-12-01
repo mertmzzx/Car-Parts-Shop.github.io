@@ -13,7 +13,6 @@ namespace CarPartsShop.API.Controllers
         private readonly AppDbContext _db;
         public CategoriesController(AppDbContext db) => _db = db;
 
-        // GET: /api/categories
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
         {
@@ -31,7 +30,6 @@ namespace CarPartsShop.API.Controllers
             return Ok(items);
         }
 
-        // GET: /api/categories/{id}
         [HttpGet("{id:int}")]
         public async Task<ActionResult<CategoryDto>> GetCategory(int id)
         {

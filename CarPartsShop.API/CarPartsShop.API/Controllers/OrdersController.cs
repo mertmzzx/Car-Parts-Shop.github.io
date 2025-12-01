@@ -20,7 +20,6 @@ namespace CarPartsShop.API.Controllers
         public OrdersController(AppDbContext db) => _db = db;
 
         // --- helpers 
-
         private async Task<IActionResult> CancelOrderCore(Order order)
         {
             if (order.Status == OrderStatus.Shipped || order.Status == OrderStatus.Delivered)
@@ -75,7 +74,6 @@ namespace CarPartsShop.API.Controllers
         }
 
 
-            // GET: /api/orders/my
             [HttpGet("my")]
             [Authorize(Roles = Roles.Customer)]
             [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
@@ -138,7 +136,6 @@ namespace CarPartsShop.API.Controllers
                 return Ok(result);
             }
 
-        // GET: /api/orders/recent?limit=10
         [HttpGet("recent")]
         [Authorize(Roles = $"{Roles.Administrator},{Roles.SalesAssistant}")]
         [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
@@ -189,9 +186,8 @@ namespace CarPartsShop.API.Controllers
         }
 
 
-        // POST: /api/orders
         [HttpPost]
-        [Authorize(Roles = Roles.Customer)] // only Customers can place orders
+        [Authorize(Roles = Roles.Customer)] 
         [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -376,7 +372,6 @@ namespace CarPartsShop.API.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = order.Id }, response);
         }
 
-        // DELETE: /api/orders/{id}
         [HttpDelete("{id:int}")]
         [Authorize(Roles = $"{Roles.Administrator},{Roles.SalesAssistant},{Roles.Customer}")]
         public async Task<IActionResult> CancelOrder(int id)
@@ -399,7 +394,6 @@ namespace CarPartsShop.API.Controllers
         }
 
 
-        // GET: /api/orders/{id}?includeHistory=true
         [HttpGet("{id:int}")]
         [Authorize(Roles = $"{Roles.Administrator},{Roles.SalesAssistant},{Roles.Customer}")]
         [ProducesResponseType(typeof(OrderResponseDto), StatusCodes.Status200OK)]
@@ -420,7 +414,7 @@ namespace CarPartsShop.API.Controllers
             {
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId) || order.Customer?.UserId != userId)
-                    return Forbid(); // 403
+                    return Forbid()
             }
 
             var partIds = order.Items.Select(i => i.PartId).Distinct().ToList();
@@ -465,7 +459,6 @@ namespace CarPartsShop.API.Controllers
 
 
 
-        // GET: /api/customers/{customerId}/orders
         [HttpGet("/api/customers/{customerId:int}/orders")]
         [Authorize(Roles = $"{Roles.Administrator},{Roles.SalesAssistant}")]
         [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
@@ -517,7 +510,6 @@ namespace CarPartsShop.API.Controllers
             return Ok(result);
         }
 
-        // GET: /api/orders
         [HttpGet]
         [Authorize(Roles = $"{Roles.Administrator},{Roles.SalesAssistant}")]
         [ProducesResponseType(typeof(IEnumerable<OrderResponseDto>), StatusCodes.Status200OK)]
@@ -592,7 +584,6 @@ namespace CarPartsShop.API.Controllers
             return Ok(results);
         }
 
-        // PATCH: /api/orders/{id}/status
         [HttpPatch("{id:int}/status")]
         [Authorize(Roles = $"{Roles.Administrator},{Roles.SalesAssistant}")]
         public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)

@@ -10,7 +10,6 @@ namespace CarPartsShop.API.Data.Seed
         {
             context.Database.Migrate();
 
-            // Check if categories already seeded
             if (!context.Categories.Any())
             {
                 var categories = new List<Category>
@@ -24,7 +23,6 @@ namespace CarPartsShop.API.Data.Seed
                 context.SaveChanges();
             }
 
-            // Seed parts only if none exist
             if (!context.Parts.Any())
             {
                 var brakes = context.Categories.FirstOrDefault(c => c.Name == "Brakes");
@@ -42,7 +40,6 @@ namespace CarPartsShop.API.Data.Seed
                 context.SaveChanges();
             }
 
-            // Seed test customer if testUserId is present and Customers table is empty
             if (!string.IsNullOrWhiteSpace(testUserId) && !context.Customers.Any())
             {
                 var customers = new List<Customer>

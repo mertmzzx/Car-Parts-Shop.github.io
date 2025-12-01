@@ -27,7 +27,6 @@ namespace CarPartsShop.API.Controllers
             _db = db;
         }
 
-        // POST: /api/auth/register
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
@@ -35,7 +34,6 @@ namespace CarPartsShop.API.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-            // password check 
             if (!string.IsNullOrWhiteSpace(dto.ConfirmPassword) &&
                 !string.Equals(dto.Password, dto.ConfirmPassword))
             {
@@ -79,14 +77,13 @@ namespace CarPartsShop.API.Controllers
             {
                 Token = token,
                 Role = role,
-                UserName = user.UserName!, // equals email
+                UserName = user.UserName!,
                 FirstName = user.FirstName ?? "",
                 LastName = user.LastName ?? ""
             });
         }
 
 
-        // POST: /api/auth/login
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {

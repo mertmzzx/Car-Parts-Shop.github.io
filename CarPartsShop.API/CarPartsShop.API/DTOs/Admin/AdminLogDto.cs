@@ -1,5 +1,4 @@
-﻿// DTOs/Admin/AdminLogDto.cs
-namespace CarPartsShop.API.DTOs.Admin
+﻿namespace CarPartsShop.API.DTOs.Admin
 {
     public class AdminLogDto
     {

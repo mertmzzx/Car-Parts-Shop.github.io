@@ -32,7 +32,7 @@
             public int CategoryId { get; set; }
             public Category? Category { get; set; }
 
-            // Concurrency (optional but good)
+            // Concurrency
             [Timestamp]
             public byte[]? RowVersion { get; set; }
         }
