@@ -1,4 +1,4 @@
-# 🚘 Silver Star Parts – Full-Stack Web App for Car Parts
+# 🚘 [Silver Star Parts – Full-Stack Web App for Car Parts](https://mertmzzx.github.io/Car-Parts-Shop.github.io/)
 Silver Star Parts is a full-stack demo web application built with ASP.NET Core(C#) for the backend and React (Bootstrap) for the frontend.
 It simulates a real online shop for car parts, designed to showcase modern web development, clean architecture, and e-commerce features.
 
@@ -42,13 +42,12 @@ It simulates a real online shop for car parts, designed to showcase modern web d
 
 - Role-based Authorization (Admin, Sales Assistant, Customer)
 
-### 💾 Database
+### 💾 Database 
 - Used SQL Server in Development
+
 - Switched to PostgreSQL in Production
 
 ### 🔧 Other Tools & Libraries
 - Swagger (API documentation)
 
 - Axios (API calls in frontend)
-
-- ESLint + Prettier (code quality & formatting)
