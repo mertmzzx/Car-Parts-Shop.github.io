@@ -20,8 +20,9 @@ http.interceptors.response.use(
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_user");
       // soft redirect (don’t hard crash UI)
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      const adminBase = "/Car-Parts-Shop.github.io/admin";
+      if (window.location.pathname !== `${adminBase}/login`) {
+        window.location.href = `${adminBase}/login`;
       }
     }
     return Promise.reject(err);
